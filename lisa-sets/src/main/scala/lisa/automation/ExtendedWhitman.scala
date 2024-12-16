@@ -30,7 +30,6 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
           val hyp = Hypothesis(goal, phi)
           steps = steps :+ hyp
           Left(SCProof(steps))
-      case _ if axioms.contains((gamma, delta)) => Left(SCProof(steps)) // Ax
 
       // ==== Gamma cases ====
       case (AnnotatedFormula(ConnectorFormula(Neg, phi), annot), delta) => // LeftNot
@@ -75,42 +74,32 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
         // TODO: Add the proof steps
         if p1.isLeft && p2.isLeft then Left(SCProof(steps)) else Right("Error")
 
+      case _ =>
+        if axioms.contains((gamma, delta)) then Left(SCProof(steps)) // Ax
+        if (gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation) then // Weaken
+          // NOTE: The formula doesn't really matter, what's important is the None annotation
+          // There might be a smarter way to represent None
+          val p1 = prove(gamma, AnnotatedFormula(gamma._1, NoneAnnotation))
+          val p2 = prove(AnnotatedFormula(delta._1, NoneAnnotation), delta)
+          // TODO: Add the proof steps
+          if p1.isLeft then return p1 else return p2
+
+          val cut = axiomsFormulas.find(x => {
+            val p1 = prove(gamma, AnnotatedFormula(x, RightAnnotation))
+            val p2 = prove(AnnotatedFormula(x, LeftAnnotation), delta)
+            val p3 = prove(delta, AnnotatedFormula(x, RightAnnotation))
+            val p4 = prove(AnnotatedFormula(x, LeftAnnotation), gamma)
+            (p1.isLeft && p2.isLeft) || (p3.isLeft && p4.isLeft)
+          })
+          cut match
+            case Some(x) => Left(SCProof(steps))
+            case None => Right("Error")
+
+
     success match
       case Left(proof) =>
         proven = proven ++ Set((gamma, delta))
         Left(proof)
       case Right(error) => Right(error)
-// =======
-//     val success = (gamma, delta) match {
-//       case (phi, phi) => Left(SCProof(IndexedSeq(SC.Hypothesis(goal, phi)))) 
-//       case (_, _) if axioms contains goal => SCProof(IndexedSeq())
-//       case (gamma, delta) => 
-
-//       case gamma != None, delta != None => (prove(gamma, none) || prove(none, delta)) 
-//       
-//       case (neg(psi)_left, delta) => prove(psi_right, delta) 
-//       case (And(phi,psi)_left, delta) => (prove(phi_left, delta) || prove(psi_left, delta)) 
-//       case (Or(phi,psi)_left, delta) => (prove(phi_left, delta) && prove(psi_left, delta)) 
-//       
-//       case (neg(psi)_right, delta) => (prove(psi_left, delta))
-//       case (And(phi,psi)_right, delta) => (prove(phi_right, delta) && prove(psi_right, delta)) 
-//       case (Or(phi,psi)_right, delta) => (prove(phi_right, delta) || prove(psi_right,delta)) 
-
-//       case (gamma, neg(psi)_left) => prove(gamma, psi_left) 
-//       case (gamma, And(phi,psi)_left) => (prove(gamma, phi_left) || prove(gamma, psi_left)) 
-//       case (gamma, Or(phi,psi)_left) => (prove(gamma, phi_left) && prove(gamma,psi_left)) 
-//       
-//       case (gamma, neg(psi)_right) => (prove(gamma,psi_left))
-//       case (gamma, And(phi,psi)_right) => (prove(gamma, phi_right) && prove(gamma, psi_right)) 
-//       case (gamma, Or(phi,psi)_right) => (prove(gamma, phi_right) || prove(gamma, psi_right)) 
-
-//       case AxFormula(x in AxFormula => (prove(gamma, x_right) && prove(x_left, delta)) || (prove(delta, x_right) && prove(x_left, gamma)) 
-
-//       // my idea for handle left and right gives to prove a array (Formula: F, side: 0 - left, 1 - right) 
-//       // when you analyze the formula you analyze side and F and the rebuild a new array like
-//       // ((And(psi, phi), 0), delta) => (prove((psi, 0), delta)) || prove((phi,0), delta)) 
-//       // I think you don't have to build new strange property for Formula and subformula because the side is at  total formula level 
-//     }
-// >>>>>>> origin/feature/whitman-variant
   }
 }
