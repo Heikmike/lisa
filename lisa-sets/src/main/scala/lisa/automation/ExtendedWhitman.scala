@@ -1,9 +1,8 @@
-import lisa.kernel.proof.SequentCalculus.Sequent
-import lisa.utils.K.{_, given}
-import lisa.kernel.fol.FOL.*
+import lisa.kernel.proof.SequentCalculus.SCProofStep
+import lisa.fol.FOL.*
 import lisa.kernel.proof.SCProof
 
-// INFO: Consider moving those objects and classes lisa.kernel.fol.FormulaDefinitions
+// INFO: Consider moving those objects and classes somewhere else
 sealed trait Annotation
 case object LeftAnnotation extends Annotation
 case object RightAnnotation extends Annotation
@@ -27,26 +26,26 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
     val success = (gamma, delta) match // success means that success has type Left(proof)
       case (AnnotatedFormula(phi, phiAnnot), AnnotatedFormula(psi, psiAnnot))
       if (phi == psi && phiAnnot != psiAnnot && phiAnnot != NoneAnnotation && psiAnnot != NoneAnnotation) => // Hyp
-          val hyp = Hypothesis(goal, phi)
-          steps = steps :+ hyp
+          // val hyp = Hypothesis(goal, phi)
+          // steps = steps :+ hyp
           Left(SCProof(steps))
 
       // ==== Gamma cases ====
-      case (AnnotatedFormula(ConnectorFormula(Neg, phi), annot), delta) => // LeftNot
+      case (AnnotatedFormula(¬(phi), annot), delta) => // LeftNot
         val reversedAnnot = annot match
           case LeftAnnotation => RightAnnotation
           case RightAnnotation => LeftAnnotation
           case NoneAnnotation => NoneAnnotation
 
-        prove(AnnotatedFormula(phi.head, reversedAnnot), delta)
+        prove(AnnotatedFormula(phi, reversedAnnot), delta)
 
-      case (AnnotatedFormula(ConnectorFormula(And, Seq(phi, psi)), annot), delta) => // LeftAnd
+      case (AnnotatedFormula(phi ∧ psi, annot), delta) => // LeftAnd
         val p1 = prove(AnnotatedFormula(phi, annot), delta)
         val p2 = prove(AnnotatedFormula(psi, annot), delta)
         // TODO: Add the proof steps
         if p1.isLeft then p1 else p2
 
-      case (AnnotatedFormula(ConnectorFormula(Or, Seq(phi, psi)), annot), delta) => // LeftOr
+      case (AnnotatedFormula(phi ∨ psi, annot), delta) => // LeftOr
         val p1 = prove(AnnotatedFormula(phi, annot), delta)
         val p2 = prove(AnnotatedFormula(psi, annot), delta)
         // TODO: Add the proof steps
@@ -54,21 +53,21 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
 
 
       // ==== Delta cases ====
-      case (delta, AnnotatedFormula(ConnectorFormula(Neg, phi), annot)) => // RightNot
+      case (delta, AnnotatedFormula(¬(phi), annot)) => // RightNot
         val reversedAnnot = annot match
           case LeftAnnotation => RightAnnotation
           case RightAnnotation => LeftAnnotation
           case NoneAnnotation => NoneAnnotation
 
-        prove(delta, AnnotatedFormula(phi.head, reversedAnnot))
+        prove(delta, AnnotatedFormula(phi, reversedAnnot))
 
-      case (gamma, AnnotatedFormula(ConnectorFormula(And, Seq(phi, psi)), annot)) => // RightAnd
+      case (gamma, AnnotatedFormula(phi ∧ psi, annot)) => // RightAnd
         val p1 = prove(gamma, AnnotatedFormula(phi, annot))
         val p2 = prove(gamma, AnnotatedFormula(psi, annot))
         // TODO: Add the proof steps
         if p1.isLeft then p1 else p2
 
-      case (gamma, AnnotatedFormula(ConnectorFormula(Or, Seq(phi, psi)), annot)) => // RightOr
+      case (gamma, AnnotatedFormula(phi ∨ psi, annot)) => // RightOr
         val p1 = prove(gamma, AnnotatedFormula(phi, annot))
         val p2 = prove(gamma, AnnotatedFormula(psi, annot))
         // TODO: Add the proof steps
