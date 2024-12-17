@@ -2,6 +2,7 @@ package lisa.automation.settheory
 
 import lisa.SetTheoryLibrary.{_, given}
 import lisa.automation.Tautology
+import lisa.automation.ExtendedWhitman
 import lisa.fol.FOL.{_, given}
 import lisa.kernel.proof.SequentCalculus as SCunique
 import lisa.maths.Quantifiers
@@ -195,6 +196,32 @@ object SetTheoryTactics {
 
       // safely check, unwrap, and return the proof judgement
       unwrapTactic(sp)("Subproof for unique comprehension failed.")
+    }
+  }
+
+  object WhitmanTactic extends ProofTactic {
+    /**
+     * Attempts to prove a goal sequent using ExtendedWhitman algorithm.
+     *
+     * @param axioms The set of axioms to use as assumptions in the proof.
+     * @param bot   The sequent to prove.
+     * @return A ProofTacticJudgement, either valid or invalid depending on the success of the algorithm.
+     */
+    def apply(using lib: Library, proof: lib.Proof)(axioms: Set[(AnnotatedFormula, AnnotatedFormula)])(bot: Sequent): proof.ProofTacticJudgement = {
+      if (bot.left.size >= 0 || bot.right.size != 1) {
+        return proof.InvalidProofTactic("The goal sequent must have at most one formula on the left and right side.")
+      }
+
+      val gamma = AnnotatedFormula(⊥, NoneAnnotation)
+      val delta = AnnotatedFormula(bot.right.head, RightAnnotation)
+
+      val whitman = new ExtendedWhitman(axioms)
+
+      whitman.prove(gamma, delta) match
+        case Left(scProof) => // If successful
+          proof.ValidProofTactic(bot, scProof.steps, Seq()) // Return a valid proof tactic
+        case Right(msg) => // If failed
+          proof.InvalidProofTactic(msg)
     }
   }
 }

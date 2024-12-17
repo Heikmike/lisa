@@ -1,14 +1,8 @@
+package lisa.automation
+
 import lisa.kernel.proof.SequentCalculus.SCProofStep
 import lisa.fol.FOL.*
 import lisa.kernel.proof.SCProof
-
-// INFO: Consider moving those objects and classes somewhere else
-sealed trait Annotation
-case object LeftAnnotation extends Annotation
-case object RightAnnotation extends Annotation
-case object NoneAnnotation extends Annotation
-
-case class AnnotatedFormula(formula: Formula, annotation: Annotation)
 
 class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
   def prove(gamma: AnnotatedFormula, delta: AnnotatedFormula): Either[SCProof, String] = {

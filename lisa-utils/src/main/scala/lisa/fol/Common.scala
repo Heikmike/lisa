@@ -531,6 +531,13 @@ trait Common {
     def toStringSeparated() = toString()
   }
 
+  sealed trait Annotation
+  case object LeftAnnotation extends Annotation
+  case object RightAnnotation extends Annotation
+  case object NoneAnnotation extends Annotation
+
+  case class AnnotatedFormula(formula: Formula, annotation: Annotation)
+
   /////////////////////
   // Atomic Formulas //
   /////////////////////
