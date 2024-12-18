@@ -7,44 +7,47 @@ import lisa.utils.memoization.memoized
 
 class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
   val axiomsFormulas = axioms flatMap { case (a, b) => Set(a.formula, b.formula) }
-  val memoizedProve: ((AnnotatedFormula, AnnotatedFormula)) => Boolean = memoized[(AnnotatedFormula, AnnotatedFormula), Boolean] { case (gamma, delta) =>
-    if isAtomic(gamma._1) && isAtomic(delta._1) then
-      println(s"Checking atomic formulas: $gamma and $delta")
-      gamma._1 == delta._1 || delta._2 != NoneAnnotation
+  var proven: Set[(AnnotatedFormula, AnnotatedFormula)] = Set()
+  var visited: Set[(AnnotatedFormula, AnnotatedFormula)] = Set()
+
+  def prove(gamma: AnnotatedFormula, delta: AnnotatedFormula): Boolean = {
+    if proven.contains((gamma, delta)) then return true
+    else if visited.contains((gamma, delta)) then return false
     else
+      visited += ((gamma, delta))
       // ==== Common cases ====
       val hyp = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation &&
         gamma._1 == delta._1 && gamma._2 != delta._2
       val ax = axioms.contains((gamma, delta))
       val weaken = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation &&
-        (memoizedProve(gamma, AnnotatedFormula(delta._1, NoneAnnotation)) || memoizedProve(AnnotatedFormula(gamma._1, NoneAnnotation), delta))
+        (prove(gamma, AnnotatedFormula(delta._1, NoneAnnotation)) || prove(AnnotatedFormula(gamma._1, NoneAnnotation), delta))
 
       // ==== Gamma cases ====
       val leftNot = gamma match
-        case AnnotatedFormula(¬(phi), annot) => memoizedProve(AnnotatedFormula(phi, annot), delta)
+        case AnnotatedFormula(¬(phi), annot) => prove(AnnotatedFormula(phi, annot), delta)
         case _ => false
       val leftAnd = gamma match
-        case AnnotatedFormula(phi ∧ psi, annot) => memoizedProve(AnnotatedFormula(phi, annot), delta) || memoizedProve(AnnotatedFormula(psi, annot), delta)
+        case AnnotatedFormula(phi ∧ psi, annot) => prove(AnnotatedFormula(phi, annot), delta) || prove(AnnotatedFormula(psi, annot), delta)
         case _ => false
       val leftOr = gamma match
-        case AnnotatedFormula(phi ∨ psi, annot) => memoizedProve(AnnotatedFormula(phi, annot), delta) && memoizedProve(AnnotatedFormula(psi, annot), delta)
+        case AnnotatedFormula(phi ∨ psi, annot) => prove(AnnotatedFormula(phi, annot), delta) && prove(AnnotatedFormula(psi, annot), delta)
         case _ => false
 
       // ==== Delta cases =====
       val rightNot = delta match
-        case AnnotatedFormula(¬(phi), annot) => memoizedProve(gamma, AnnotatedFormula(phi, annot))
+        case AnnotatedFormula(¬(phi), annot) => prove(gamma, AnnotatedFormula(phi, annot))
         case _ => false
       val rightAnd = delta match
-        case AnnotatedFormula(phi ∧ psi, annot) => memoizedProve(gamma, AnnotatedFormula(phi, annot)) || memoizedProve(gamma, AnnotatedFormula(psi, annot))
+        case AnnotatedFormula(phi ∧ psi, annot) => prove(gamma, AnnotatedFormula(phi, annot)) || prove(gamma, AnnotatedFormula(psi, annot))
         case _ => false
       val rightOr = delta match
-        case AnnotatedFormula(phi ∨ psi, annot) => memoizedProve(gamma, AnnotatedFormula(phi, annot)) && memoizedProve(gamma, AnnotatedFormula(psi, annot))
+        case AnnotatedFormula(phi ∨ psi, annot) => prove(gamma, AnnotatedFormula(phi, annot)) && prove(gamma, AnnotatedFormula(psi, annot))
         case _ => false
       val cut = axiomsFormulas.exists(x => {
-        val p1 = memoizedProve(gamma, AnnotatedFormula(x, RightAnnotation))
-        val p2 = memoizedProve(AnnotatedFormula(x, LeftAnnotation), delta)
-        val p3 = memoizedProve(delta, AnnotatedFormula(x, RightAnnotation))
-        val p4 = memoizedProve(AnnotatedFormula(x, LeftAnnotation), gamma)
+        val p1 = prove(gamma, AnnotatedFormula(x, RightAnnotation))
+        val p2 = prove(AnnotatedFormula(x, LeftAnnotation), delta)
+        val p3 = prove(delta, AnnotatedFormula(x, RightAnnotation))
+        val p4 = prove(AnnotatedFormula(x, LeftAnnotation), gamma)
 
         (p1 && p2) || (p3 && p4)
       })
@@ -54,6 +57,7 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
         rightNot || rightAnd || rightOr ||
         cut
 
+      if success then proven += ((gamma, delta))
       success
   }
 
@@ -62,9 +66,5 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
     case phi ∨ psi => false
     case ¬(phi) => false
     case _ => true
-  }
-
-  def prove(gamma: AnnotatedFormula, delta: AnnotatedFormula): Boolean = {
-    memoizedProve((gamma, delta))
   }
 }

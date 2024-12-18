@@ -7,9 +7,12 @@ object Whitman extends lisa.Main {
   val x = VariableFormula("x")
   val u = VariableFormula("u")
   val left = x ∧ (¬(x) ∨ u)
+  val right = ¬(x) ∨ u
+  val bottom = AnnotatedFormula(⊥, NoneAnnotation)
 
-  val axiom = AnnotatedFormula(left, RightAnnotation)
-  val axiomSet: Set[(AnnotatedFormula, AnnotatedFormula)] = Set()
+  val axiom1 = (bottom, AnnotatedFormula(left, LeftAnnotation))
+  val axiom2 = (bottom, AnnotatedFormula(right, RightAnnotation))
+  val axiomSet: Set[(AnnotatedFormula, AnnotatedFormula)] = Set(axiom1, axiom2)
   val gamma = AnnotatedFormula(left, LeftAnnotation)
   val delta = AnnotatedFormula(u, RightAnnotation)
 
@@ -19,7 +22,7 @@ object Whitman extends lisa.Main {
 
   // val axiom1 = (AnnotatedFormula(x, LeftAnnotation), AnnotatedFormula(y, RightAnnotation))
   // val axiom2 = (AnnotatedFormula(y, LeftAnnotation), AnnotatedFormula(z, RightAnnotation))
-  // val axiomSet = Set(axiom1, axiom2)
+  // val axiomSet: Set[(AnnotatedFormula, AnnotatedFormula)] = Set(axiom1, axiom2)
 
   // val gamma = AnnotatedFormula(x, LeftAnnotation)
   // val delta = AnnotatedFormula(z, RightAnnotation)
