@@ -50,6 +50,17 @@ object Whitman extends lisa.Main {
   // val gamma = AnnotatedFormula(phi, LeftAnnotation)
   // val delta = AnnotatedFormula(¬(phi), RightAnnotation)
 
+  // ==== Example Allessio ====
+
+  val phi = VariableFormula("phi")
+  val psi = VariableFormula("psi")
+  val eta = VariableFormula("eta")
+  val axiom1 = (AnnotatedFormula(phi, LeftAnnotation), AnnotatedFormula(¬(eta), RightAnnotation))
+  val axiom2 = (AnnotatedFormula(psi, LeftAnnotation), AnnotatedFormula(¬(eta), RightAnnotation))
+  val axiomSet = Set(axiom1, axiom2)
+  val gamma = AnnotatedFormula((phi ∨ psi) ∧ eta, LeftAnnotation)
+  val delta = AnnotatedFormula((phi ∨ psi) ∧ eta, LeftAnnotation)
+
   val extendedWhitman = ExtendedWhitman(axiomSet)
   if extendedWhitman.prove(gamma, delta) then
     print("Success")

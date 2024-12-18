@@ -24,25 +24,54 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
 
       // ==== Gamma cases ====
       val leftNot = gamma match
-        case AnnotatedFormula(¬(phi), annot) => prove(AnnotatedFormula(phi, annot), delta)
+        case AnnotatedFormula(¬(phi), LeftAnnotation) => prove(AnnotatedFormula(phi, RightAnnotation), delta)
         case _ => false
       val leftAnd = gamma match
-        case AnnotatedFormula(phi ∧ psi, annot) => prove(AnnotatedFormula(phi, annot), delta) || prove(AnnotatedFormula(psi, annot), delta)
+        case AnnotatedFormula(phi ∧ psi, LeftAnnotation) => 
+          prove(AnnotatedFormula(phi, LeftAnnotation), delta) || prove(AnnotatedFormula(psi, LeftAnnotation), delta)
         case _ => false
       val leftOr = gamma match
-        case AnnotatedFormula(phi ∨ psi, annot) => prove(AnnotatedFormula(phi, annot), delta) && prove(AnnotatedFormula(psi, annot), delta)
+        case AnnotatedFormula(phi ∨ psi, LeftAnnotation) => 
+          prove(AnnotatedFormula(phi, LeftAnnotation), delta) && prove(AnnotatedFormula(psi, LeftAnnotation), delta)
         case _ => false
 
-      // ==== Delta cases =====
-      val rightNot = delta match
-        case AnnotatedFormula(¬(phi), annot) => prove(gamma, AnnotatedFormula(phi, annot))
+      val rightNot = gamma match
+        case AnnotatedFormula(¬(phi), RightAnnotation) => prove(AnnotatedFormula(phi, LeftAnnotation), delta)
         case _ => false
-      val rightAnd = delta match
-        case AnnotatedFormula(phi ∧ psi, annot) => prove(gamma, AnnotatedFormula(phi, annot)) || prove(gamma, AnnotatedFormula(psi, annot))
+      val rightAnd = gamma match
+        case AnnotatedFormula(phi ∧ psi, RightAnnotation) =>
+          prove(AnnotatedFormula(phi, RightAnnotation), delta) && prove(AnnotatedFormula(psi, RightAnnotation), delta)
         case _ => false
-      val rightOr = delta match
-        case AnnotatedFormula(phi ∨ psi, annot) => prove(gamma, AnnotatedFormula(phi, annot)) && prove(gamma, AnnotatedFormula(psi, annot))
+      val rightOr = gamma match
+        case AnnotatedFormula(phi ∨ psi, RightAnnotation) =>
+          prove(AnnotatedFormula(phi, RightAnnotation), delta) || prove(AnnotatedFormula(psi, RightAnnotation), delta)
         case _ => false
+
+      // ==== Delta cases ====
+      val leftNotb = delta match
+        case AnnotatedFormula(¬(phi), LeftAnnotation) => prove(gamma, AnnotatedFormula(phi, RightAnnotation))
+        case _ => false
+      val leftAndb = delta match
+        case AnnotatedFormula(phi ∧ psi, LeftAnnotation) => 
+          prove(AnnotatedFormula(phi, LeftAnnotation), gamma) || prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
+        case _ => false
+      val leftOrb = delta match
+        case AnnotatedFormula(phi ∨ psi, LeftAnnotation) => 
+          prove(AnnotatedFormula(phi, LeftAnnotation), gamma) && prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
+        case _ => false
+
+      val rightNotb = delta match
+        case AnnotatedFormula(¬(phi), RightAnnotation) => prove(gamma, AnnotatedFormula(phi, LeftAnnotation))
+        case _ => false
+      val rightAndb = delta match
+        case AnnotatedFormula(phi ∧ psi, RightAnnotation) =>
+          prove(AnnotatedFormula(phi, RightAnnotation), gamma) && prove(gamma, AnnotatedFormula(psi, RightAnnotation))
+        case _ => false
+      val rightOrb = delta match
+        case AnnotatedFormula(phi ∨ psi, RightAnnotation) =>
+          prove(AnnotatedFormula(phi, RightAnnotation), gamma) || prove(gamma, AnnotatedFormula(psi, RightAnnotation))
+        case _ => false
+
       val cut = axiomsFormulas.exists(x => {
         val p1 = prove(gamma, AnnotatedFormula(x, RightAnnotation))
         val p2 = prove(AnnotatedFormula(x, LeftAnnotation), delta)
@@ -55,7 +84,9 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
       val success = hyp || ax || weaken ||
         leftNot || leftAnd || leftOr ||
         rightNot || rightAnd || rightOr ||
-        cut
+        cut ||
+        leftNotb || leftAndb || leftOrb ||
+        rightNotb || rightAndb || rightOrb
 
       if success then proven += ((gamma, delta))
       success
