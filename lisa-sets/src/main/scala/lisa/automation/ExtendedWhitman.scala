@@ -54,7 +54,7 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
         rightNot || rightAnd || rightOr ||
         cut
 
-      return success
+      success
   }
 
   def isAtomic(formula: Formula): Boolean = formula match {
