@@ -9,7 +9,7 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
   val axiomsFormulas = axioms flatMap { case (a, b) => Set(a.formula, b.formula) }
   var VisitedFormula : Set[(AnnotatedFormula, AnnotatedFormula)] = Set()
   val memoizedProve: ((AnnotatedFormula, AnnotatedFormula)) => Boolean = memoized[(AnnotatedFormula, AnnotatedFormula), Boolean] { case (gamma, delta) =>
-    if if (VisitedFormula.contains((gamma, delta))) then 
+    if (VisitedFormula.contains((gamma, delta))) then 
        return false 
     else 
       VisitedFormula += (gamma, delta) 
