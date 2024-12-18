@@ -9,9 +9,20 @@ object Whitman extends lisa.Main {
   val left = x ∧ (¬(x) ∨ u)
 
   val axiom = AnnotatedFormula(left, RightAnnotation)
-  val axiomSet = Set((AnnotatedFormula(⊥, NoneAnnotation), axiom))
+  val axiomSet: Set[(AnnotatedFormula, AnnotatedFormula)] = Set()
   val gamma = AnnotatedFormula(left, LeftAnnotation)
   val delta = AnnotatedFormula(u, RightAnnotation)
+
+  // val x = VariableFormula("x")
+  // val y = VariableFormula("y")
+  // val z = VariableFormula("z")
+
+  // val axiom1 = (AnnotatedFormula(x, LeftAnnotation), AnnotatedFormula(y, RightAnnotation))
+  // val axiom2 = (AnnotatedFormula(y, LeftAnnotation), AnnotatedFormula(z, RightAnnotation))
+  // val axiomSet = Set(axiom1, axiom2)
+
+  // val gamma = AnnotatedFormula(x, LeftAnnotation)
+  // val delta = AnnotatedFormula(z, RightAnnotation)
 
   val extendedWhitman = ExtendedWhitman(axiomSet)
   if extendedWhitman.prove(gamma, delta) then
