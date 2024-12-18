@@ -10,13 +10,13 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
   var VisitedFormula : Set[(AnnotatedFormula, AnnotatedFormula)] = Set()
   val memoizedProve: ((AnnotatedFormula, AnnotatedFormula)) => Boolean = memoized[(AnnotatedFormula, AnnotatedFormula), Boolean] { case (gamma, delta) =>
     if (VisitedFormula.contains((gamma, delta))) then 
-       return false 
+       false 
     else 
       VisitedFormula += (gamma, delta) 
       val hyp = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation &&
         gamma._1 == delta._1 && gamma._2 != delta._2
       val ax = axioms.contains((gamma, delta))
-      val weaken = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation && // !(Visited(formula bla bla) 
+      val weaken = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation &&  
         (memoizedProve(gamma, AnnotatedFormula(delta._1, NoneAnnotation)) || memoizedProve(AnnotatedFormula(gamma._1, NoneAnnotation), delta))
 
       // ==== Gamma cases ====
