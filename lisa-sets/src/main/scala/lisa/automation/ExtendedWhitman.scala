@@ -7,16 +7,16 @@ import lisa.utils.memoization.memoized
 
 class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
   val axiomsFormulas = axioms flatMap { case (a, b) => Set(a.formula, b.formula) }
+  var VisitedFormula : Set[(AnnotatedFormula, AnnotatedFormula)] = Set()
   val memoizedProve: ((AnnotatedFormula, AnnotatedFormula)) => Boolean = memoized[(AnnotatedFormula, AnnotatedFormula), Boolean] { case (gamma, delta) =>
-    if isAtomic(gamma._1) && isAtomic(delta._1) then
-      println(s"Checking atomic formulas: $gamma and $delta")
-      gamma._1 == delta._1 || delta._2 != NoneAnnotation
-    else
-      // ==== Common cases ====
+    if if (VisitedFormula.contains((gamma, delta))) then 
+       return false 
+    else 
+      VisitedFormula += (gamma, delta) 
       val hyp = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation &&
         gamma._1 == delta._1 && gamma._2 != delta._2
       val ax = axioms.contains((gamma, delta))
-      val weaken = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation &&
+      val weaken = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation && // !(Visited(formula bla bla) 
         (memoizedProve(gamma, AnnotatedFormula(delta._1, NoneAnnotation)) || memoizedProve(AnnotatedFormula(gamma._1, NoneAnnotation), delta))
 
       // ==== Gamma cases ====
@@ -54,7 +54,7 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
         rightNot || rightAnd || rightOr ||
         cut
 
-      success
+      return success
   }
 
   def isAtomic(formula: Formula): Boolean = formula match {
