@@ -93,6 +93,8 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
       case Left(proof) =>
         proven = proven ++ Set((gamma, delta))
         Left(proof)
-      case Right(error) => Right(error)
+      case _ =>
+        print(proven)
+        Right("Error")
   }
 }
