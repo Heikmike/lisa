@@ -14,7 +14,8 @@ object Whitman extends lisa.Main {
   val delta = AnnotatedFormula(u, RightAnnotation)
 
   val extendedWhitman = ExtendedWhitman(axiomSet)
-  extendedWhitman.prove(gamma, delta) match
-    case Left(proof) => println("success")
-    case Right(error) => println(error)
+  if extendedWhitman.prove(gamma, delta) then
+    print("Success")
+  else
+    print("Failed")
 }
