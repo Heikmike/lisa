@@ -5,16 +5,16 @@ import lisa.fol.FOL.*
 
 object Whitman extends lisa.Main {
   // ==== Example 3.1 from paper ====
-  // val x = VariableFormula("x")
-  // val u = VariableFormula("u")
-  // val left = x ∧ (¬(x) ∨ u)
-  // val right = ¬(x) ∨ u
-  // val bottom = AnnotatedFormula(⊥, NoneAnnotation)
+  val x = VariableFormula("x")
+  val u = VariableFormula("u")
+  val left = x ∧ (¬(x) ∨ u)
+  val right = ¬(x) ∨ u
+  val bottom = AnnotatedFormula(⊥, NoneAnnotation)
 
-  // val axiom = (bottom, AnnotatedFormula(left, RightAnnotation))
-  // val axiomSet: Set[(AnnotatedFormula, AnnotatedFormula)] = Set(axiom)
-  // val gamma = bottom
-  // val delta = AnnotatedFormula(right, RightAnnotation)
+  val axiom = (bottom, AnnotatedFormula(left, RightAnnotation))
+  val axiomSet: Set[(AnnotatedFormula, AnnotatedFormula)] = Set(axiom)
+  val gamma = AnnotatedFormula(right, LeftAnnotation)
+  val delta = AnnotatedFormula(u, RightAnnotation)
 
   // ==== De Morgan's Law ====
   // val phi = VariableFormula("phi")
@@ -52,14 +52,14 @@ object Whitman extends lisa.Main {
 
   // ==== Example Allessio ====
 
-  val phi = VariableFormula("phi")
-  val psi = VariableFormula("psi")
-  val eta = VariableFormula("eta")
-  val axiom1 = (AnnotatedFormula(phi, LeftAnnotation), AnnotatedFormula(¬(eta), RightAnnotation))
-  val axiom2 = (AnnotatedFormula(psi, LeftAnnotation), AnnotatedFormula(¬(eta), RightAnnotation))
-  val axiomSet = Set(axiom1, axiom2)
-  val gamma = AnnotatedFormula((phi ∨ psi) ∧ eta, LeftAnnotation)
-  val delta = AnnotatedFormula((phi ∨ psi) ∧ eta, LeftAnnotation)
+  // val phi = VariableFormula("phi")
+  // val psi = VariableFormula("psi")
+  // val eta = VariableFormula("eta")
+  // val axiom1 = (AnnotatedFormula(phi, LeftAnnotation), AnnotatedFormula(¬(eta), RightAnnotation))
+  // val axiom2 = (AnnotatedFormula(psi, LeftAnnotation), AnnotatedFormula(¬(eta), RightAnnotation))
+  // val axiomSet = Set(axiom1, axiom2)
+  // val gamma = AnnotatedFormula((phi ∨ psi) ∧ eta, LeftAnnotation)
+  // val delta = AnnotatedFormula((phi ∨ psi) ∧ eta, LeftAnnotation)
 
   val extendedWhitman = ExtendedWhitman(axiomSet)
   if extendedWhitman.prove(gamma, delta) then

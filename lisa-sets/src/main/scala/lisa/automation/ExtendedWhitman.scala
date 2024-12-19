@@ -11,6 +11,7 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
   var visited: Set[(AnnotatedFormula, AnnotatedFormula)] = Set()
 
   def prove(gamma: AnnotatedFormula, delta: AnnotatedFormula): Boolean = {
+    val bottom = AnnotatedFormula(⊥, NoneAnnotation)
     if proven.contains((gamma, delta)) then return true
     else if visited.contains((gamma, delta)) then return false
     else
@@ -18,20 +19,20 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
       // ==== Common cases ====
       val hyp = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation &&
         gamma._1 == delta._1 && gamma._2 != delta._2
-      val ax = axioms.contains((gamma, delta))
+      val ax = axioms.contains((gamma, delta)) || axioms.contains((delta, gamma))
       val weaken = gamma._2 != NoneAnnotation && delta._2 != NoneAnnotation &&
-        (prove(gamma, AnnotatedFormula(delta._1, NoneAnnotation)) || prove(AnnotatedFormula(gamma._1, NoneAnnotation), delta))
+        (prove(gamma, bottom) || prove(bottom, delta))
 
       // ==== Gamma cases ====
       val leftNot = gamma match
         case AnnotatedFormula(¬(phi), LeftAnnotation) => prove(AnnotatedFormula(phi, RightAnnotation), delta)
         case _ => false
       val leftAnd = gamma match
-        case AnnotatedFormula(phi ∧ psi, LeftAnnotation) => 
+        case AnnotatedFormula(phi ∧ psi, LeftAnnotation) =>
           prove(AnnotatedFormula(phi, LeftAnnotation), delta) || prove(AnnotatedFormula(psi, LeftAnnotation), delta)
         case _ => false
       val leftOr = gamma match
-        case AnnotatedFormula(phi ∨ psi, LeftAnnotation) => 
+        case AnnotatedFormula(phi ∨ psi, LeftAnnotation) =>
           prove(AnnotatedFormula(phi, LeftAnnotation), delta) && prove(AnnotatedFormula(psi, LeftAnnotation), delta)
         case _ => false
 
@@ -52,12 +53,12 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
         case AnnotatedFormula(¬(phi), LeftAnnotation) => prove(gamma, AnnotatedFormula(phi, RightAnnotation))
         case _ => false
       val leftAndb = delta match
-        case AnnotatedFormula(phi ∧ psi, LeftAnnotation) => 
-          prove(gamma,AnnotatedFormula(phi, LeftAnnotation)) || prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
+        case AnnotatedFormula(phi ∧ psi, LeftAnnotation) =>
+          prove(gamma, AnnotatedFormula(phi, LeftAnnotation)) || prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
         case _ => false
       val leftOrb = delta match
-        case AnnotatedFormula(phi ∨ psi, LeftAnnotation) => 
-          prove(gamma,AnnotatedFormula(phi, LeftAnnotation)) && prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
+        case AnnotatedFormula(phi ∨ psi, LeftAnnotation) =>
+          prove(gamma, AnnotatedFormula(phi, LeftAnnotation)) && prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
         case _ => false
 
       val rightNotb = delta match
@@ -65,11 +66,11 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
         case _ => false
       val rightAndb = delta match
         case AnnotatedFormula(phi ∧ psi, RightAnnotation) =>
-          prove(gamma,AnnotatedFormula(phi, RightAnnotation)) && prove(gamma, AnnotatedFormula(psi, RightAnnotation))
+          prove(gamma, AnnotatedFormula(phi, RightAnnotation)) && prove(gamma, AnnotatedFormula(psi, RightAnnotation))
         case _ => false
       val rightOrb = delta match
         case AnnotatedFormula(phi ∨ psi, RightAnnotation) =>
-          prove(gamma,AnnotatedFormula(phi, RightAnnotation)) || prove(gamma,AnnotatedFormula(psi, RightAnnotation))
+          prove(gamma, AnnotatedFormula(phi, RightAnnotation)) || prove(gamma, AnnotatedFormula(psi, RightAnnotation))
         case _ => false
 
       val cut = axiomsFormulas.exists(x => {

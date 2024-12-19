@@ -536,7 +536,13 @@ trait Common {
   case object RightAnnotation extends Annotation
   case object NoneAnnotation extends Annotation
 
-  case class AnnotatedFormula(formula: Formula, annotation: Annotation)
+  case class AnnotatedFormula(formula: Formula, annotation: Annotation) {
+    override def toString(): String = annotation match {
+      case LeftAnnotation => formula.toString()
+      case RightAnnotation => formula.toString()
+      case NoneAnnotation => "None"
+    }
+  }
 
   /////////////////////
   // Atomic Formulas //
