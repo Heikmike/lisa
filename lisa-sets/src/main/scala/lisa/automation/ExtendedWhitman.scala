@@ -53,11 +53,11 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
         case _ => false
       val leftAndb = delta match
         case AnnotatedFormula(phi ∧ psi, LeftAnnotation) => 
-          prove(AnnotatedFormula(phi, LeftAnnotation), gamma) || prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
+          prove(gamma,AnnotatedFormula(phi, LeftAnnotation)) || prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
         case _ => false
       val leftOrb = delta match
         case AnnotatedFormula(phi ∨ psi, LeftAnnotation) => 
-          prove(AnnotatedFormula(phi, LeftAnnotation), gamma) && prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
+          prove(gamma,AnnotatedFormula(phi, LeftAnnotation)) && prove(gamma, AnnotatedFormula(psi, LeftAnnotation))
         case _ => false
 
       val rightNotb = delta match
@@ -65,11 +65,11 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
         case _ => false
       val rightAndb = delta match
         case AnnotatedFormula(phi ∧ psi, RightAnnotation) =>
-          prove(AnnotatedFormula(phi, RightAnnotation), gamma) && prove(gamma, AnnotatedFormula(psi, RightAnnotation))
+          prove(gamma,AnnotatedFormula(phi, RightAnnotation)) && prove(gamma, AnnotatedFormula(psi, RightAnnotation))
         case _ => false
       val rightOrb = delta match
         case AnnotatedFormula(phi ∨ psi, RightAnnotation) =>
-          prove(AnnotatedFormula(phi, RightAnnotation), gamma) || prove(gamma, AnnotatedFormula(psi, RightAnnotation))
+          prove(gamma,AnnotatedFormula(phi, RightAnnotation)) || prove(gamma,AnnotatedFormula(psi, RightAnnotation))
         case _ => false
 
       val cut = axiomsFormulas.exists(x => {
@@ -84,8 +84,7 @@ class ExtendedWhitman(axioms: Set[(AnnotatedFormula, AnnotatedFormula)]) {
       val success = hyp || ax || weaken ||
         leftNot || leftAnd || leftOr ||
         rightNot || rightAnd || rightOr ||
-        cut ||
-        leftNotb || leftAndb || leftOrb ||
+        cut || leftNotb || leftAndb || leftOrb ||
         rightNotb || rightAndb || rightOrb
 
       if success then proven += ((gamma, delta))
